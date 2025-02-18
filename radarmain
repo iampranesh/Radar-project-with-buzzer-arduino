@@ -1,0 +1,64 @@
+#include <Servo.h> 
+
+const int trigPin = 9;
+const int echoPin = 10;
+const int buzzerPin = 11;  // Buzzer connected to pin 9
+
+long duration;
+int distance;
+Servo myServo; 
+
+void setup() {
+  pinMode(trigPin, OUTPUT); 
+  pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT); // Set buzzer pin as output
+  Serial.begin(9600);
+  myServo.attach(12); 
+}
+
+void loop() {
+  for(int i = 15; i <= 165; i++) {  
+    myServo.write(i);
+    delay(30);
+    distance = calculateDistance();
+    Serial.print(i); 
+    Serial.print(","); 
+    Serial.print(distance); 
+    Serial.print(".");
+
+    checkBuzzer(distance); // Check if buzzer should turn on
+  }
+  
+  for(int i = 165; i > 15; i--) {  
+    myServo.write(i);
+    delay(30);
+    distance = calculateDistance();
+    Serial.print(i);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.print(".");
+
+    checkBuzzer(distance); // Check if buzzer should turn on
+  }
+}
+
+int calculateDistance() {  
+  digitalWrite(trigPin, LOW); 
+  delayMicroseconds(2);
+  
+  digitalWrite(trigPin, HIGH); 
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+  return distance;
+}
+
+void checkBuzzer(int distance) {
+  if (distance > 0 && distance < 30) { // Increase threshold to 30 cm
+    digitalWrite(buzzerPin, HIGH); // Turn buzzer ON
+  } else {
+    digitalWrite(buzzerPin, LOW); // Turn buzzer OFF
+  }
+}
