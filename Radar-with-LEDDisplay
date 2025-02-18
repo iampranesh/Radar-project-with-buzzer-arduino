@@ -1,0 +1,86 @@
+#include <LiquidCrystal.h>
+#include <Servo.h>
+
+const int trigPin = 2;
+const int echoPin = 3;
+const int buzzerPin = 10;
+const int servoPin = 11;
+
+long duration;
+int distance;
+Servo myServo;
+
+// Initialize LCD (RS, E, D4, D5, D6, D7)
+LiquidCrystal lcd(4, 5, 6, 7, 8, 9);
+
+void setup() {
+  pinMode(trigPin, OUTPUT); 
+  pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
+  Serial.begin(9600);
+  myServo.attach(servoPin);
+
+  // Initialize LCD
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print("Inzora BOT - P.D"); // Static text on first row
+}
+
+void loop() {
+  for(int i = 15; i <= 165; i++) {  
+    myServo.write(i);
+    delay(30);
+    distance = calculateDistance();
+    
+    Serial.print(i); 
+    Serial.print(","); 
+    Serial.print(distance); 
+    Serial.print(".");
+
+    displayDistance(distance); 
+    checkBuzzer(distance); 
+  }
+  
+  for(int i = 165; i > 15; i--) {  
+    myServo.write(i);
+    delay(30);
+    distance = calculateDistance();
+    
+    Serial.print(i);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.print(".");
+
+    displayDistance(distance);
+    checkBuzzer(distance); 
+  }
+}
+
+int calculateDistance() {  
+  digitalWrite(trigPin, LOW); 
+  delayMicroseconds(2);
+  
+  digitalWrite(trigPin, HIGH); 
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034 / 2;
+  return distance;
+}
+
+void checkBuzzer(int distance) {
+  if (distance > 0 && distance < 30) { 
+    digitalWrite(buzzerPin, HIGH); // Buzzer ON
+  } else {
+    digitalWrite(buzzerPin, LOW); // Buzzer OFF
+  }
+}
+
+void displayDistance(int distance) {
+  lcd.setCursor(0, 1);
+  lcd.print("Distance:       "); // Clear previous value
+  lcd.setCursor(10, 1);
+  lcd.print(distance);
+  lcd.print("cm");
+}
